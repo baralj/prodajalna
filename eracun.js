@@ -182,11 +182,20 @@ streznik.get('/izpisiRacun/:oblika', function(zahteva, odgovor) {
       odgovor.send("<p>V košarici nimate nobene pesmi, \
         zato računa ni mogoče pripraviti!</p>");
     } else {
-      odgovor.setHeader('content-type', 'text/xml');
-      odgovor.render('eslog', {
-        vizualiziraj: zahteva.params.oblika == 'html' ? true : false,
-        postavkeRacuna: pesmi
-      })  
+      pb.all("SELECT * FROM Customer WHERE Customer.CustomerId = " + zahteva.session.trenutnaStranka, function(napaka, trenStranka) {
+         if (napaka){
+           console.log("Prišlo je do napake pri dostopu do trenutno prijavljene stranke.");
+           odgovor.end();
+         }
+         else{
+           odgovor.setHeader('content-type', 'text/xml');
+           odgovor.render('eslog', {
+              vizualiziraj: zahteva.params.oblika == 'html' ? true : false,
+              postavkeRacuna: pesmi,
+              stranka: trenStranka[0]
+           })  
+         }
+      })
     }
   })
 })
